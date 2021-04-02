@@ -8,6 +8,8 @@ namespace poopstory2_server
         {
             NetworkHandler nh = new NetworkHandler();
             nh.Start(6823);
+            ConsoleHandler ch = new ConsoleHandler(nh);
+            ch.Start();
         }
     }
 }

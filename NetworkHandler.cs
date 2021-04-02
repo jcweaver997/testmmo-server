@@ -1,4 +1,5 @@
 ﻿using poopstory2_server.NetData;
+using poopstory2_server.NetUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,66 +16,23 @@ namespace poopstory2_server
     /// </summary>
     public class NetworkHandler
     {
-        public const string VERSION = "1.0";
-        Thread listenThread;
-        TcpListener listener;
-        int port;
-        public NetworkInfo networkInfo;
         public ChannelHandler channelHandler;
+        public NetworkServer ns;
 
         public void Start(int port)
         {
             channelHandler = new ChannelHandler();
-            NetworkDataTypes.Initialize();
-            if (listener != null)
+            ns = new NetworkServer(port);
+            ns.OnNewClient += (nc) =>
             {
-                Close();
-            }
-            this.port = port;
-            networkInfo = new NetworkInfo()
-            {
-                clients = new List<NetworkClient>()
+                ClientHandler ch = new ClientHandler(nc);
+                ch.onConnectionInitialized += ()=>Task.Run(()=>channelHandler.SelectChannel(ch.client,ch.auth.name));
             };
 
-
-            listener = new TcpListener(new IPEndPoint(IPAddress.Any,this.port));
-            listenThread = new Thread(Listen);
-            listenThread.Start();
+            ns.Start();
 
         }
 
-        public void Listen()
-        {
-            listener.Start();
-            Console.WriteLine("Waiting for clients");
-            while (true)
-            {
-                var newClient = listener.AcceptTcpClient();
-                var nc = new NetworkClient(newClient,this);
-                nc.OnClientClose += HandleClientClose;
-                networkInfo.clients.Add(nc);
-                
-            }
-        }
-
-        public void Close()
-        {
-            listenThread.Interrupt();
-            listener.Stop();
-
-            listener = null;
-            listenThread = null;
-        }
-
-        public void HandleClientClose(NetworkClient client)
-        {
-            networkInfo.clients.Remove(client);
-            Console.WriteLine("Client closed connection");
-        }
-
-        ~NetworkHandler()
-        {
-            Close();
-        }
+     
     }
 }

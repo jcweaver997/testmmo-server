@@ -1,20 +1,19 @@
 ﻿using poopstory2_server.NetData;
+using poopstory2_server.NetUtil;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace poopstory2_server
 {
-    class AuthenticationData
+    public class Authentication
     {
-
-    }
-    class Authentication
-    {
+        public string name;
         private NetworkClient client;
 
         public Authentication(NetworkClient client)
@@ -22,20 +21,16 @@ namespace poopstory2_server
             this.client = client;
         }
 
-        public bool Authenticate(out string username)
+        public async Task<bool> AuthenticateAsync()
         {
-            var nd = client.ReadBlock();
+            var nd = await client.ReadAsync();
             if (nd is NetworkDataLogin l)
             {
-                Console.WriteLine($"u: {l.username} p: {l.password}");
-                username = l.username;
+                name = l.username;
                 return true;
-
             }
             else
             {
-                username = "";
-                Console.WriteLine("auth failed with "+nd);
                 return false;
             }
         }

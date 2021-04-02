@@ -21,5 +21,9 @@ namespace poopstory2_server.NetTypes
             this.qz = qz;
             this.qw = qw;
         }
+        public override string ToString()
+        {
+            return $"player {pid} loc [{px},{py},{pz}] rot [{qx},{qy},{qz},{qw}]";
+        }
     }
 }
